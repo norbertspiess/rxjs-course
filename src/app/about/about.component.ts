@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { fromEvent, timer } from 'rxjs';
+import { noop } from 'rxjs';
+import { createHttpObservable } from '../common/util';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'about',
@@ -13,20 +15,17 @@ export class AboutComponent implements OnInit {
 
   ngOnInit() {
 
-    // const interval$ = interval(1000); // every x ms
-    // interval$.subscribe(val => console.log('stream 1 => ', val));
-    // interval$.subscribe(val => console.log('stream 2 => ', val));
+    const http$ = createHttpObservable('/api/courses');
 
-    const interval$ = timer(3000, 1000); // every 1000 ms with initial delay of 3000
-    const sub = interval$.subscribe(val => console.log('stream 1 => ', val));
+    const courses$ = http$
+      .pipe(
+        map(res => Object.values(res['payload']))
+      );
 
-    setTimeout(() => sub.unsubscribe(), 5000); // unsubscribe from observable
-
-    const click$ = fromEvent(document, 'click'); // click events on "document"
-    const subscription = click$.subscribe(
-      evt => console.log(evt),
-      err => console.log(err), // either this or completed
-      () => console.log('completed') // either this or error
+    courses$.subscribe(
+      courses => console.log(courses),
+      noop, // no operation
+      () => console.log('done')
     );
 
   }
