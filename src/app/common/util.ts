@@ -14,7 +14,7 @@ export function createHttpObservable(url: string): Observable<any> {
       })
       .catch(err => observer.error(err));
 
-    return () => controller.abort(); // cancel request on unsubscription
+    return () => controller.abort(); // unsubscription logic => cancel request
   });
 }
 
