@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Course } from '../model/course';
-import { noop } from 'rxjs';
+import { noop, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { createHttpObservable } from '../common/util';
 
@@ -11,30 +11,26 @@ import { createHttpObservable } from '../common/util';
 })
 export class HomeComponent implements OnInit {
 
-  private beginnersCourses: Course[];
-  private advancedCourses: Course[];
-
-  constructor() {
-
-  }
+  private beginnersCourses$: Observable<Course[]>;
+  private advancedCourses$: Observable<Course[]>;
 
   ngOnInit() {
 
     const http$ = createHttpObservable('/api/courses');
 
-    const courses$ = http$
+    const courses$: Observable<Course[]> = http$
       .pipe(
         map(res => Object.values(res['payload']))
       );
 
-    courses$.subscribe(
-      courses => {
-        this.beginnersCourses = courses.filter(c => c.category == 'BEGINNER');
-        this.advancedCourses = courses.filter(c => c.category == 'ADVANCED');
-      },
-      noop, // no operation
-      () => console.log('done')
-    );
+    this.beginnersCourses$ = courses$
+      .pipe(
+        map(courses => courses.filter(_ => _.category === 'BEGINNER'))
+      );
+    this.advancedCourses$ = courses$
+      .pipe(
+        map(courses => courses.filter(_ => _.category === 'ADVANCED'))
+      );
 
   }
 
