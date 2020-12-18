@@ -1,8 +1,8 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Course } from '../model/course';
-import { debounceTime, distinctUntilChanged, map, startWith, switchMap } from 'rxjs/operators';
-import { concat, fromEvent, Observable } from 'rxjs';
+import { map, throttle, throttleTime } from 'rxjs/operators';
+import { concat, fromEvent, Observable, timer } from 'rxjs';
 import { Lesson } from '../model/lesson';
 import { createHttpObservable } from '../common/util';
 
@@ -31,10 +31,12 @@ export class CourseComponent implements OnInit, AfterViewInit {
     const searchLessons$ = fromEvent<any>(this.input.nativeElement, 'keyup')
       .pipe(
         map(event => event.target.value),
-        startWith(''), // initial execution / item. in this case: search term
-        debounceTime(400), // only act if nothing changed for 400ms
-        distinctUntilChanged(), // remove duplicate values
-        switchMap(search => this.loadLessons(search)) // unsubscribe previous item$ and switch to new one, if previous is still running
+        // startWith(''), // initial execution / item. in this case: search term
+        // debounceTime(400), // only act if nothing changed for 400ms
+        // distinctUntilChanged(), // remove duplicate values
+        // switchMap(search => this.loadLessons(search)) // unsubscribe previous item$ and switch to new one, if previous is still running
+        throttle(() => timer(500)), // emit only first within 500ms
+        throttleTime(500), // alias for throttle
       );
 
     const initialLessons$ = this.loadLessons();
