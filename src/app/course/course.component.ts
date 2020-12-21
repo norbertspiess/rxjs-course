@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Course } from '../model/course';
-import { map, throttle, throttleTime } from 'rxjs/operators';
-import { concat, fromEvent, Observable, timer } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, startWith, switchMap } from 'rxjs/operators';
+import { concat, fromEvent, Observable } from 'rxjs';
 import { Lesson } from '../model/lesson';
 import { createHttpObservable } from '../common/util';
+import { debug, RxJsLoggingLevel } from '../common/debug';
 
 @Component({
   selector: 'course',
@@ -24,19 +25,24 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.courseId = this.route.snapshot.params['id'];
-    this.course$ = createHttpObservable(`/api/courses/${this.courseId}`);
+    this.course$ = createHttpObservable(`/api/courses/${this.courseId}`)
+      .pipe(
+        debug(RxJsLoggingLevel.INFO, 'course value')
+      );
   }
 
   ngAfterViewInit() {
     const searchLessons$ = fromEvent<any>(this.input.nativeElement, 'keyup')
       .pipe(
         map(event => event.target.value),
-        // startWith(''), // initial execution / item. in this case: search term
-        // debounceTime(400), // only act if nothing changed for 400ms
-        // distinctUntilChanged(), // remove duplicate values
-        // switchMap(search => this.loadLessons(search)) // unsubscribe previous item$ and switch to new one, if previous is still running
-        throttle(() => timer(500)), // emit only first within 500ms
-        throttleTime(500), // alias for throttle
+        startWith(''), // initial execution / item. in this case: search term
+        debug(RxJsLoggingLevel.TRACE, 'search'),
+        debounceTime(400), // only act if nothing changed for 400ms
+        distinctUntilChanged(), // remove duplicate values
+        switchMap(search => this.loadLessons(search)), // unsubscribe previous item$ and switch to new one, if previous is still running
+        // throttle(() => timer(500)), // emit only first within 500ms
+        // throttleTime(500), // alias for throttle
+        debug(RxJsLoggingLevel.DEBUG, 'lessons value'),
       );
 
     const initialLessons$ = this.loadLessons();
