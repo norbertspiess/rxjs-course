@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'about',
@@ -7,24 +7,25 @@ import { Observable, Subject } from 'rxjs';
   styleUrls: ['./about.component.css']
 })
 export class AboutComponent implements OnInit {
-  public series$: Observable<number>;
 
   ngOnInit() {
 
-    const subject = new Subject<number>(); // keep this one private
-    this.series$ = subject.asObservable(); // this can be public
+    const subject = new Subject<number>(); // basic subject has no "memory"
+    const series$ = subject.asObservable();
 
-    this.series$.subscribe(console.log);
+    series$.subscribe(val => console.log('early sub: ', val));
 
     subject.next(1);
     subject.next(2);
     subject.next(3);
-    subject.complete();
 
-    // simple way to create observables, BUT
-    // - no unsubscription logic
-    // - subjects can be misused
+    // subject.complete();
 
+    setTimeout(() => {
+      series$.subscribe(val => console.log('late sub: ', val)); // nothing happens here, as items are already emitted
+
+      subject.next(4); // is picked up by both
+    }, 3000);
   }
 
 }
