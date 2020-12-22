@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { AsyncSubject } from 'rxjs';
 
 @Component({
   selector: 'about',
@@ -11,7 +11,8 @@ export class AboutComponent implements OnInit {
   ngOnInit() {
 
     // const subject = new Subject<number>(); // basic subject has no "memory"
-    const subject = new BehaviorSubject<number>(0); // always emit last value. needs initializing value
+    // const subject = new BehaviorSubject<number>(0); // always emit last value. needs initializing value. except if completed
+    const subject = new AsyncSubject<number>(); // waits until completion, before emitting the last value ONLY
     const series$ = subject.asObservable();
 
     series$.subscribe(val => console.log('early sub: ', val));
@@ -20,11 +21,11 @@ export class AboutComponent implements OnInit {
     subject.next(2);
     subject.next(3);
 
-    // subject.complete(); // if completed before late subscription, late subscription does not get any value
+    subject.complete();
 
     setTimeout(() => {
-      series$.subscribe(val => console.log('late sub: ', val)); // 3, as it's the last emitted value
-    }, 3000);
+      series$.subscribe(val => console.log('late sub: ', val));
+    }, 3000); // receives last emitted value as well
   }
 
 }
