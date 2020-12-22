@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AsyncSubject } from 'rxjs';
+import { ReplaySubject } from 'rxjs';
 
 @Component({
   selector: 'about',
@@ -12,7 +12,8 @@ export class AboutComponent implements OnInit {
 
     // const subject = new Subject<number>(); // basic subject has no "memory"
     // const subject = new BehaviorSubject<number>(0); // always emit last value. needs initializing value. except if completed
-    const subject = new AsyncSubject<number>(); // waits until completion, before emitting the last value ONLY
+    // const subject = new AsyncSubject<number>(); // waits until completion, before emitting the last value ONLY
+    const subject = new ReplaySubject<number>(); // replay complete observable to all subscribers, no matter when they subscribe
     const series$ = subject.asObservable();
 
     series$.subscribe(val => console.log('early sub: ', val));
@@ -25,7 +26,7 @@ export class AboutComponent implements OnInit {
 
     setTimeout(() => {
       series$.subscribe(val => console.log('late sub: ', val));
-    }, 3000); // receives last emitted value as well
+    }, 3000);
   }
 
 }
