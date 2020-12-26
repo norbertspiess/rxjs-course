@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Course } from '../model/course';
 import { createHttpObservable } from './util';
-import { map, tap } from 'rxjs/operators';
+import { filter, map, tap } from 'rxjs/operators';
 import { fromPromise } from 'rxjs/internal-compatibility';
 
 @Injectable({
@@ -51,7 +51,8 @@ export class Store {
     return this.courses$
       .pipe(
         map(courses => courses
-          .find(course => course.id === courseId))
+          .find(course => course.id === courseId)),
+        filter(course => !!course), // ignore "undefined" values
       );
   }
 

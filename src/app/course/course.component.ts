@@ -2,16 +2,16 @@ import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/
 import {ActivatedRoute} from "@angular/router";
 import {Course} from "../model/course";
 import {
-    debounceTime,
-    distinctUntilChanged,
-    startWith,
-    tap,
-    delay,
-    map,
-    concatMap,
-    switchMap,
-    withLatestFrom,
-    concatAll, shareReplay
+  debounceTime,
+  distinctUntilChanged,
+  startWith,
+  tap,
+  delay,
+  map,
+  concatMap,
+  switchMap,
+  withLatestFrom,
+  concatAll, shareReplay, first
 } from 'rxjs/operators';
 import {merge, fromEvent, Observable, concat} from 'rxjs';
 import {Lesson} from '../model/lesson';
@@ -44,7 +44,10 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
         this.courseId = this.route.snapshot.params['id'];
 
-        this.course$ = this.store.selectCourseById(this.courseId);
+        this.course$ = this.store.selectCourseById(this.courseId)
+          .pipe(
+            first() // take(1)
+          );
 
     }
 
