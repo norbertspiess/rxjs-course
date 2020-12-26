@@ -28,7 +28,7 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
     courseId: number;
 
-    course$ : Observable<Course>;
+    course$: Observable<Course>;
 
     lessons$: Observable<Lesson[]>;
 
@@ -49,16 +49,27 @@ export class CourseComponent implements OnInit, AfterViewInit {
             first() // take(1)
           );
 
+      this.loadLessons()
+        .pipe(
+          withLatestFrom(this.course$)
+        )
+        .subscribe(([lessons, course]) => {
+          console.log('lessons', lessons);
+          console.log('course', course);
+        });
     }
 
     ngAfterViewInit() {
 
         const searchLessons$ =  fromEvent<any>(this.input.nativeElement, 'keyup')
             .pipe(
-                map(event => event.target.value),
+                map(event => {
+                  const searchTerm = event.target.value;
+                  return searchTerm;
+                }),
                 debounceTime(400),
                 distinctUntilChanged(),
-                switchMap(search => this.loadLessons(search))
+                switchMap(searchTerm => this.loadLessons(searchTerm))
             );
 
         const initialLessons$ = this.loadLessons();
