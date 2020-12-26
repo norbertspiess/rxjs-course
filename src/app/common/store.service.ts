@@ -43,6 +43,18 @@ export class Store {
       );
   }
 
+  selectCourseById(courseId: number) {
+    return this.filterById(courseId);
+  }
+
+  private filterById(courseId: number) {
+    return this.courses$
+      .pipe(
+        map(courses => courses
+          .find(course => course.id === courseId))
+      );
+  }
+
   saveCourse(courseId: number, changes: any): Observable<any> {
     const courses = this.subject.getValue();
     const courseIndex = courses
